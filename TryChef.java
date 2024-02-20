@@ -38,14 +38,15 @@ public class TryChef implements Runnable {
             }
 
 
-            // Livelock prevented
-            // Chef attempts to obtain the lock. If not, drop any resources held and do some cleaning
-
+            // Deadlock prevented
+            // Wait to get Knife and Board lock
+            // If failed to collect BOTH locks -> release any resources held
+            // Hold lock until either BOTH acquired or failed to get both after waiting
             boolean hasKnifeLock = false;
             boolean hasBoardLock = false;
             try {
-                hasKnifeLock = knifeLock.tryLock(0, TimeUnit.MILLISECONDS);
-                hasBoardLock = boardLock.tryLock(0, TimeUnit.MILLISECONDS);
+                hasKnifeLock = knifeLock.tryLock(100, TimeUnit.MILLISECONDS);
+                hasBoardLock = boardLock.tryLock(100, TimeUnit.MILLISECONDS);
 
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
