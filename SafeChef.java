@@ -27,7 +27,7 @@ public class SafeChef implements Runnable {
             }
 
             // Deadlock prevented
-            // Chef must check if it can collect *both* before the other Chef can
+            // Chef must have all resources
             synchronized (singleKitchenLock) {
                 if(this.kitchen.isKnifeAvailable())
                 {
@@ -43,6 +43,30 @@ public class SafeChef implements Runnable {
                     this.hasBoard = true;
                 }
             }
+
+
+            /*
+            // Deadlock-safe
+            // Chefs must pick up knife then board
+            // If not available, wait until other Chef releases
+            synchronized (knifeLock) {
+                while(!this.kitchen.isKnifeAvailable()) System.out.println("Chef " + this.name + ": Waiting for knife to be available.");
+
+                System.out.println("Chef " + this.name + ": Picked up knife.");
+                this.kitchen.setKnifeAvailable(false);
+                this.hasKnife = true;
+
+            }
+
+            synchronized (boardLock) {
+                while(!this.kitchen.isBoardAvailable()) System.out.println("Chef " + this.name + ": Waiting for board to be available.");
+
+                System.out.println("Chef " + this.name + ": Picked up chopping board.");
+                this.kitchen.setBoardAvailable(false);
+                this.hasBoard = true;
+
+            }
+             */
         }
     }
 }

@@ -5,8 +5,8 @@ public class Chef implements Runnable {
     private boolean hasKnife;
     private boolean hasBoard;
 
-    private final Object knifeLock = new Object();
-    private final Object boardLock = new Object();
+    private static final Object knifeLock = new Object();
+    private static final Object boardLock = new Object();
 
     public Chef(String name, Kitchen kitchen) {
         this.name = name;
@@ -27,9 +27,9 @@ public class Chef implements Runnable {
                 this.kitchen.setBoardAvailable(true);
             }
 
-            /*
-            // Livelock caused by resource holding
-            // One Chef holds knife while other Chef holds board
+
+            // Deadlock caused by resource holding
+            // If Chef A picks up knife then releases lock, Chef B can 'overtake' Chef A and pick up board before Chef A
             synchronized (knifeLock) {
                 if(this.kitchen.isKnifeAvailable())
                 {
@@ -39,6 +39,8 @@ public class Chef implements Runnable {
                 }
             }
 
+            // DEADLOCK if CPU switches from Chef A (with Knife, no Board) to Chef B (no Knife, no Board) here
+
             synchronized (boardLock) {
                 if(this.kitchen.isBoardAvailable())
                 {
@@ -46,28 +48,6 @@ public class Chef implements Runnable {
                     this.kitchen.setBoardAvailable(false);
                     this.hasBoard = true;
                 }
-            }
-             */
-
-            // Deadlock caused by resource holding
-            // Chef holding knife waits for board to be available
-            // Chef holding board waits for knife to be available
-            synchronized (knifeLock) {
-                while(!this.kitchen.isKnifeAvailable()) System.out.println("Chef " + this.name + ": Waiting for knife to be available.");
-
-                System.out.println("Chef " + this.name + ": Picked up knife.");
-                this.kitchen.setKnifeAvailable(false);
-                this.hasKnife = true;
-
-            }
-
-            synchronized (boardLock) {
-                while(!this.kitchen.isBoardAvailable()) System.out.println("Chef " + this.name + ": Waiting for board to be available.");
-
-                System.out.println("Chef " + this.name + ": Picked up chopping board.");
-                this.kitchen.setBoardAvailable(false);
-                this.hasBoard = true;
-
             }
         }
     }
