@@ -27,9 +27,9 @@ public class Chef implements Runnable {
                 this.kitchen.setBoardAvailable(true);
             }
 
-
-            // Deadlock caused by hold-and-wait
-            // One Chef can hold knife while other Chef holds board
+            /*
+            // Livelock caused by resource holding
+            // One Chef holds knife while other Chef holds board
             synchronized (knifeLock) {
                 if(this.kitchen.isKnifeAvailable())
                 {
@@ -47,7 +47,28 @@ public class Chef implements Runnable {
                     this.hasBoard = true;
                 }
             }
+             */
 
+            // Deadlock caused by resource holding
+            // Chef holding knife waits for board to be available
+            // Chef holding board waits for knife to be available
+            synchronized (knifeLock) {
+                while(!this.kitchen.isKnifeAvailable()) System.out.println("Chef " + this.name + ": Waiting for knife to be available.");
+
+                System.out.println("Chef " + this.name + ": Picked up knife.");
+                this.kitchen.setKnifeAvailable(false);
+                this.hasKnife = true;
+
+            }
+
+            synchronized (boardLock) {
+                while(!this.kitchen.isBoardAvailable()) System.out.println("Chef " + this.name + ": Waiting for board to be available.");
+
+                System.out.println("Chef " + this.name + ": Picked up chopping board.");
+                this.kitchen.setBoardAvailable(false);
+                this.hasBoard = true;
+
+            }
         }
     }
 }
